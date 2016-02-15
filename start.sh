@@ -1,10 +1,5 @@
 #!/bin/bash
 
-# Disable Strict Host checking for non interactive git clones
-
-#mkdir -p -m 0700 /root/.ssh
-echo -e "Host *\n\tStrictHostKeyChecking no\n" >> /root/.ssh/config
-
 # Setup git variables
 if [ ! -z "$GIT_EMAIL" ]; then
  git config --global user.email "$GIT_EMAIL"
@@ -16,6 +11,15 @@ fi
 
 # Pull down code form git for our site!
 if [ ! -z "$GIT_REPO" ]; then
+  chmod -R 700 /root/.ssh
+
+  if [ ! -f /root/.ssh/config ]; then
+    echo "/root/.ssh/config doesn't exists: creating it with StrictHostKeyChecking no"
+    echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > /root/.ssh/config
+  else
+    echo "/root/.ssh/config exists: nothing to do"
+  fi
+
   rm -rf /data/www
   if [ ! -z "$GIT_BRANCH" ]; then
     git clone -b $GIT_BRANCH $GIT_REPO /data/www/
@@ -28,5 +32,5 @@ fi
 chown -R nginx:nginx /data
 
 
-sudo -u nginx /usr/bin/fastcgi-mono-server4 --applications=/:/data/www --socket=unix:/data/nginxSock/unix.socket --printlog=True 
+exec sudo -u nginx /usr/bin/fastcgi-mono-server4 --applications=/:/data/www --socket=unix:/data/nginxSock/unix.socket --printlog=True 
 

@@ -1,1 +1,1 @@
-sudo docker build --rm -t ofm-mono:1 .
+sudo docker build --rm -t ofm35/dockerdotnet .
